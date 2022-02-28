@@ -1,12 +1,12 @@
+import inspect
+import itertools
+import sys
 from functools import partial
 from inspect import isroutine
 from numbers import Number
-import inspect
-from apretty import apretty
-import sys
-
-import itertools
 from types import FunctionType
+
+from apretty import apretty
 
 base_types = tuple([list, tuple, set, dict, int, float,
                    complex, str, bytes, bool, set, frozenset])

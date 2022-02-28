@@ -1,8 +1,7 @@
+import sys
 from functools import partial
 from inspect import isroutine
 from numbers import Number
-
-import sys
 
 
 def apretty(obj, indent='    ', depth=4, width=72, seq_length=100,

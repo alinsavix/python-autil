@@ -1,19 +1,26 @@
+"""
+alintrospect - A very, VERY janky hack of a hack to try to determine the class
+hierarchy of a type/object, and figure out what particular data/methods/etc
+are defined at each level. I'd hope that there would be a better way to do
+this, but I've yet to find one. Suggestions welcome.
+"""
+
 import inspect
 import itertools
-import sys
-from functools import partial
-from inspect import isroutine
-from numbers import Number
-from types import FunctionType
-from typing import Dict, List, Optional, Set, Tuple, Union
+# import sys
+# from functools import partial
+# from inspect import isroutine
+# from numbers import Number
+# from types import FuinctionType
+from typing import Iterable, List, Set
 
-from apretty import apretty
+# FIXME: totally not sure how to type annotate this list of types
+# base_types: tuple[type, ...] = (list[Any], tuple[Any, ...], set[Any], dict[Any, Any],
+#                                 int, float, complex, str, bytes, bool, set[Any], frozenset[Any])
+base_types = (list, tuple, set, dict, int, float, complex, str, bytes, bool, set, frozenset)
 
-base_types = tuple([list, tuple, set, dict, int, float,
-                   complex, str, bytes, bool, set, frozenset])
-
-def whatis(obj: object):
-    objis = set()
+def whatis(obj: object) -> Set[str]:
+    objis: Set[str] = set()
 
     if inspect.ismodule(obj):
         objis.add("module")
@@ -63,7 +70,7 @@ def whatis(obj: object):
     return objis
 
 
-def is_method(obj):
+def is_method(obj: object) -> bool:
     w = whatis(obj)
     if w and "routine" in w:
         return True
@@ -71,17 +78,15 @@ def is_method(obj):
     return False
 
 
-def _list_members(cls):
-    return set(x for x, y in inspect.getmembers(cls))
+def _list_members(cls: object) -> Set[str]:
+    return set(x for x, _ in inspect.getmembers(cls))
 
 
-def _list_methods(cls):
-    # return set(x for x, y in cls.__dict__.items()
-    #            if "routine" in whatis(y))
-    return set(x for x, y in inspect.getmembers(cls, is_method))
+def _list_methods(cls: object) -> Set[str]:
+    return set(x for x, _ in inspect.getmembers(cls, is_method))
 
 
-def _list_parent_methods(cls):
+def _list_parent_methods(cls: object) -> Set[str]:
     if not isinstance(cls, type):
         bases = [type(cls)]
     else:
@@ -91,11 +96,10 @@ def _list_parent_methods(cls):
         _list_members(c).union(_list_parent_methods(c)) for c in bases))
 
 
-def subclass_methods(cls):
+def subclass_methods(cls: object) -> Set[str]:
     methods = _list_methods(cls)
     parent_methods = _list_parent_methods(cls)
     return methods.difference(parent_methods)
-    # return set(cls for cls in methods if not (cls in parent_methods))
 
 
 # list attributes (by listing non-methods) -- is there a better way?
@@ -115,19 +119,19 @@ def subclass_methods(cls):
 
 
 # list data (stuff that's not an attribute or method)
-def is_not_method(obj):
+def is_not_method(obj: object) -> bool:
     return not is_method(obj)
 
 
-def _list_data(cls):
+def _list_data(cls: object) -> Set[str]:
     if type(cls) is type:
         return set()
 
     # return set(x for x in dir(cls) if x not in getattr(cls, "__dict__", []))
-    return set(x for x, y in inspect.getmembers(cls, is_not_method))
+    return set(x for x, _ in inspect.getmembers(cls, is_not_method))
 
 
-def _list_parent_data(cls):
+def _list_parent_data(cls: object) -> Set[str]:
     if not isinstance(cls, type):
         bases = [type(cls)]
     else:
@@ -136,7 +140,7 @@ def _list_parent_data(cls):
         _list_members(c).union(_list_parent_data(c)) for c in bases))
 
 
-def subclass_data(cls):
+def subclass_data(cls: object) -> Set[str]:
     datas = _list_data(cls)
     parent_datas = _list_parent_data(cls)
 
@@ -153,7 +157,7 @@ def fits_in(length: int, num_colsize: int, stops: int = 3, padding: int = 2) -> 
     return fits
 
 
-def print_columns(d: Set[str], indent: int = 4):
+def print_columns(cols: List[str], indent: int = 4) -> None:
     if len(d) == 0:
         return
 
@@ -164,7 +168,7 @@ def print_columns(d: Set[str], indent: int = 4):
     column_width = (screen_width - indent) // num_cols
     all_width = screen_width - indent
 
-    cols = sorted(list(d))
+    # cols = sorted(list(d))
     first = cols[0]
     cols = cols[1:]
 
@@ -183,52 +187,31 @@ def print_columns(d: Set[str], indent: int = 4):
 
     print("\n")
 
-# def print_class_hierarchy(cls):
-#     seen = set()
-#     for t in reversed(type(cls).__mro__):
-#         seen.add(t)
-#         print(f"\n===== {str(t)} =====")
-#         print("  Methods:")
-#         meth = subclass_methods(t)
-#         if meth:
-#             print("    " + str(sorted(meth)))
-#         else:
-#             print("    --None--")
 
-#         print("\n  Attrs:")
-#         att = subclass_attrs(t)
-#         if att:
-#             print("    " + str(sorted(att)))
-#         else:
-#             print("  Attributes: --None--")
-
-
-def print_thing(name, mro, meth, data):
+def print_thing(name: str, mro: Iterable[str], meth: Iterable[str], data: Iterable[str]) -> None:
     print(f"\n===== {name} =====")
-    print(f"  MRO:")
+    print("  mro:")
     if mro:
-        print_columns(mro)
+        print("    " + " -> ".join(mro))
     else:
         print("    --None--")
 
     print("\n  Methods:")
     if meth:
-        # print("    " + str(sorted(meth)))
-        print_columns(meth)
+        print_columns(sorted(list(meth)))
     else:
         print("    --None--")
 
     print("\n  Attrs and data:")
     if data:
-        # print("    " + str(sorted(data)))
-        print_columns(data)
+        print_columns(sorted(list(data)))
     else:
         print("    --None--")
 
 
-def print_class_hierarchy_r(cls, seen=None):
-    if seen is None:
-        seen = set()
+def print_class_hierarchy_r(cls: object, seen: Set[type] = set()) -> None:
+    # if seen is None:
+    #     seen = set()
 
     if not isinstance(cls, type):
         print_class_hierarchy_r(type(cls), seen)
@@ -248,13 +231,24 @@ def print_class_hierarchy_r(cls, seen=None):
 
             print_class_hierarchy_r(t, seen)
 
-    # if getattr(cls, "__mro__", None) is None:
     if not isinstance(cls, type):
         meth = subclass_methods(cls)
         data = subclass_data(cls)
 
-        print_thing("<instance>", None, meth, data)
+        print_thing("<instance>", {}, meth, data)
 
 
-def print_hierarchy(cls):
-    print_class_hierarchy_r(cls, seen=None)
+def print_hierarchy(cls: object) -> None:
+    print_class_hierarchy_r(cls)
+
+
+if __name__ == "__main__":
+    from collections import UserDict
+    class TestThing(UserDict[str, str]):
+        thing_property: str = "zot"
+
+        def thing_method(self) -> str:
+            return "method"
+
+    test_obj = TestThing()
+    print_class_hierarchy_r(test_obj)

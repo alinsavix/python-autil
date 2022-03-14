@@ -5,11 +5,13 @@ from functools import partial
 from inspect import isroutine
 from numbers import Number
 from types import FunctionType
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 from apretty import apretty
 
 base_types = tuple([list, tuple, set, dict, int, float,
                    complex, str, bytes, bool, set, frozenset])
+
 def whatis(obj: object):
     objis = set()
 
@@ -68,13 +70,16 @@ def is_method(obj):
 
     return False
 
+
 def _list_members(cls):
     return set(x for x, y in inspect.getmembers(cls))
+
 
 def _list_methods(cls):
     # return set(x for x, y in cls.__dict__.items()
     #            if "routine" in whatis(y))
     return set(x for x, y in inspect.getmembers(cls, is_method))
+
 
 def _list_parent_methods(cls):
     if not isinstance(cls, type):
@@ -84,6 +89,7 @@ def _list_parent_methods(cls):
 
     return set(itertools.chain.from_iterable(
         _list_members(c).union(_list_parent_methods(c)) for c in bases))
+
 
 def subclass_methods(cls):
     methods = _list_methods(cls)
@@ -112,12 +118,14 @@ def subclass_methods(cls):
 def is_not_method(obj):
     return not is_method(obj)
 
+
 def _list_data(cls):
     if type(cls) is type:
         return set()
 
     # return set(x for x in dir(cls) if x not in getattr(cls, "__dict__", []))
     return set(x for x, y in inspect.getmembers(cls, is_not_method))
+
 
 def _list_parent_data(cls):
     if not isinstance(cls, type):
@@ -127,6 +135,7 @@ def _list_parent_data(cls):
     return set(itertools.chain.from_iterable(
         _list_members(c).union(_list_parent_data(c)) for c in bases))
 
+
 def subclass_data(cls):
     datas = _list_data(cls)
     parent_datas = _list_parent_data(cls)
@@ -135,39 +144,84 @@ def subclass_data(cls):
     # return set(x for x in datas if not (x in parent_data))
 
 
-def print_class_hierarchy(cls):
-    seen = set()
-    for t in reversed(type(cls).__mro__):
-        seen.add(t)
-        print(f"\n===== {str(t)} =====")
-        print("  Methods:")
-        meth = subclass_methods(t)
-        if meth:
-            print("    " + str(sorted(meth)))
-        else:
-            print("    --None--")
+def fits_in(length: int, num_colsize: int, stops: int = 3, padding: int = 2) -> int:
+    stop_list = [x * num_colsize for x in range(1, stops + 2)]
 
-        print("\n  Attrs:")
-        att = subclass_attrs(t)
-        if att:
-            print("    " + str(sorted(att)))
+    with_padding = length + padding
+    fits = min([s for s in stop_list if s >= with_padding])
+
+    return fits
+
+
+def print_columns(d: Set[str], indent: int = 4):
+    if len(d) == 0:
+        return
+
+    num_cols = 3
+    screen_width = 80
+    padding = 2
+
+    column_width = (screen_width - indent) // num_cols
+    all_width = screen_width - indent
+
+    cols = sorted(list(d))
+    first = cols[0]
+    cols = cols[1:]
+
+    fit = fits_in(len(first), column_width, num_cols, padding)
+    print(f"{' ' * indent}{first:{fit}s}", end="")
+    remain = all_width - fit
+
+    for data in cols:
+        fit = fits_in(len(data), column_width, num_cols, padding)
+        if fit > remain:
+            print(f"\n{' ' * indent}{data:{fit}s}", end="")
+            remain = all_width - fit
         else:
-            print("  Attributes: --None--")
+            print(f"{data:{fit}s}", end="")
+            remain -= fit
+
+    print("\n")
+
+# def print_class_hierarchy(cls):
+#     seen = set()
+#     for t in reversed(type(cls).__mro__):
+#         seen.add(t)
+#         print(f"\n===== {str(t)} =====")
+#         print("  Methods:")
+#         meth = subclass_methods(t)
+#         if meth:
+#             print("    " + str(sorted(meth)))
+#         else:
+#             print("    --None--")
+
+#         print("\n  Attrs:")
+#         att = subclass_attrs(t)
+#         if att:
+#             print("    " + str(sorted(att)))
+#         else:
+#             print("  Attributes: --None--")
 
 
 def print_thing(name, mro, meth, data):
     print(f"\n===== {name} =====")
-    print(f"  MRO: {mro}")
+    print(f"  MRO:")
+    if mro:
+        print_columns(mro)
+    else:
+        print("    --None--")
 
-    print("  Methods:")
+    print("\n  Methods:")
     if meth:
-        print("    " + str(sorted(meth)))
+        # print("    " + str(sorted(meth)))
+        print_columns(meth)
     else:
         print("    --None--")
 
     print("\n  Attrs and data:")
     if data:
-        print("    " + str(sorted(data)))
+        # print("    " + str(sorted(data)))
+        print_columns(data)
     else:
         print("    --None--")
 
@@ -186,7 +240,7 @@ def print_class_hierarchy_r(cls, seen=None):
 
             seen.add(t)
 
-            mro = [str(x) for x in t.__mro__]
+            mro = [f"<{x.__name__}>" for x in t.__mro__]
             meth = subclass_methods(t)
             data = subclass_data(t)
 
@@ -199,4 +253,8 @@ def print_class_hierarchy_r(cls, seen=None):
         meth = subclass_methods(cls)
         data = subclass_data(cls)
 
-        print_thing("<instance>", "--None--", meth, data)
+        print_thing("<instance>", None, meth, data)
+
+
+def print_hierarchy(cls):
+    print_class_hierarchy_r(cls, seen=None)

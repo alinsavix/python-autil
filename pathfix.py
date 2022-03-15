@@ -1,11 +1,16 @@
+import functools
 import inspect
 from pathlib import Path
+from typing import Any, Callable, List
 
+TFunc = Callable[..., Any]
 
-def fix_path(func):
-    def inner(*args):
+def fix_path(func: TFunc) -> TFunc:
+    functools.wraps(func)
+
+    def inner(*args: Any) -> Any:
         sig = inspect.signature(func)
-        _args = []
+        _args: List[Any] = []
         for name, val in zip(sig.parameters, args):
             if sig.parameters[name].annotation == Path:
                 _args.append(Path(val))
@@ -18,7 +23,7 @@ def fix_path(func):
 
 if __name__ == "__main__":
     @fix_path
-    def thingie(path: Path, path2: str, path3, path4: Path):
+    def thingie(path: Path, path2: str, path3, path4: Path) -> None:
         print(f"path: {type(path)}")
         print(f"path2: {type(path2)}")
         print(f"path3: {type(path3)}")

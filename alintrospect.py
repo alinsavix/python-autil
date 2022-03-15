@@ -158,7 +158,7 @@ def fits_in(length: int, num_colsize: int, stops: int = 3, padding: int = 2) -> 
 
 
 def print_columns(cols: List[str], indent: int = 4) -> None:
-    if len(d) == 0:
+    if len(cols) == 0:
         return
 
     num_cols = 3

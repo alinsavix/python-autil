@@ -12,12 +12,12 @@ import itertools
 # from inspect import isroutine
 # from numbers import Number
 # from types import FuinctionType
-from typing import Iterable, List, Set
+from typing import Iterable, List, Set, Tuple
 
 # FIXME: totally not sure how to type annotate this list of types
 # base_types: tuple[type, ...] = (list[Any], tuple[Any, ...], set[Any], dict[Any, Any],
 #                                 int, float, complex, str, bytes, bool, set[Any], frozenset[Any])
-base_types = (list, tuple, set, dict, int, float, complex, str, bytes, bool, set, frozenset)
+# base_types = (list, tuple, set, dict, int, float, complex, str, bytes, bool, set, frozenset)
 
 def whatis(obj: object) -> Set[str]:
     objis: Set[str] = set()
@@ -64,7 +64,7 @@ def whatis(obj: object) -> Set[str]:
         objis.add("getsetdescriptor")
     if inspect.ismemberdescriptor(obj):
         objis.add("memberdescriptor")
-    if isinstance(obj, base_types):
+    if isinstance(obj, (list, tuple, set, dict, int, float, complex, str, bytes, bool, set, frozenset)):
         objis.add("base")
 
     return objis
@@ -209,6 +209,13 @@ def print_thing(name: str, mro: Iterable[str], meth: Iterable[str], data: Iterab
         print("    --None--")
 
 
+def getmro(t: type) -> Tuple[type, ...]:
+    try:
+        return inspect.getmro(t)
+    except AttributeError:
+        return tuple()
+
+
 def print_class_hierarchy_r(cls: object, seen: Set[type] = set()) -> None:
     # if seen is None:
     #     seen = set()
@@ -216,18 +223,20 @@ def print_class_hierarchy_r(cls: object, seen: Set[type] = set()) -> None:
     if not isinstance(cls, type):
         print_class_hierarchy_r(type(cls), seen)
 
-    if getattr(type(cls), "__mro__", None) is not None:
-        for t in reversed(type(cls).__mro__):
+    mro = getmro(type(cls))
+
+    if mro:
+        for t in reversed(mro):
             if t in seen:
                 continue
 
             seen.add(t)
 
-            mro = [f"<{x.__name__}>" for x in t.__mro__]
-            meth = subclass_methods(t)
-            data = subclass_data(t)
+            mro_list = [f"<{x.__name__}>" for x in getmro(t)]
+            meth_list = subclass_methods(t)
+            data_list = subclass_data(t)
 
-            print_thing(str(t), mro, meth, data)
+            print_thing(str(t), mro_list, meth_list, data_list)
 
             print_class_hierarchy_r(t, seen)
 
@@ -246,6 +255,9 @@ if __name__ == "__main__":
     from collections import UserDict
     class TestThing(UserDict[str, str]):
         thing_property: str = "zot"
+
+        def __init__(self) -> None:
+            setattr(self, "test_attr", "test_attr_value")
 
         def thing_method(self) -> str:
             return "method"

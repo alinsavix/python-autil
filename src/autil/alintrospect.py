@@ -247,7 +247,7 @@ def print_class_hierarchy_r(cls: object, seen: Set[type] = set()) -> None:
         print_thing("<instance>", {}, meth, data)
 
 
-def print_hierarchy(cls: object) -> None:
+def alintrospect(cls: object) -> None:
     print_class_hierarchy_r(cls)
 
 

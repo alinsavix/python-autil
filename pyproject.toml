@@ -27,7 +27,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
-# dependencies = []
+dependencies = []
 
 # for e.g. "pip install mything[dev]"
 # [project.optional-dependencies]
@@ -48,8 +48,12 @@ classifiers = [
 [tool.setuptools]
 # our actual source code
 package-dir = { "" = "src" }
+
+
+[tool.setuptools.package-data]
 # data files included that need to be installed
-# package-data = {"sample" = ["*.dat"]}
+# "sample" = [ "*.dat" ]
+"autil" = [ "py.typed" ]
 
 [tool.mypy]
 python_version = 3.9

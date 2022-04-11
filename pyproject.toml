@@ -1,8 +1,6 @@
 [build-system]
-# requires = [ "setuptools>=42", "wheel" ]
-# build-backend = "setuptools.build_meta"
 requires = [
-    "setuptools~=61.0",
+    "setuptools>=61.0",
     "wheel",
 
     # this will validate our project classifiers
@@ -11,7 +9,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "autil"
+name = "tdvutil"
 version = "0.0.1"
 description = "A few simple helper classes used by TDV Alinsa"
 requires-python = ">=3.9"
@@ -35,9 +33,9 @@ dependencies = []
 
 
 [project.urls]
-"Homepage" = "https://github.com/alinsavix/python-autil"
-"Bug Reports" = "https://github.com/alinsavix/python-autil/issues"
-"Source" = "https://github.com/alinsavix/python-autil"
+"Homepage" = "https://github.com/alinsavix/python-tdvutil"
+"Bug Reports" = "https://github.com/alinsavix/python-tdvutil/issues"
+"Source" = "https://github.com/alinsavix/python-tdvutil"
 
 
 # This would provide a command called `sample` which executes the function

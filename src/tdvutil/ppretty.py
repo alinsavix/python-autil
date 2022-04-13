@@ -4,7 +4,7 @@ from inspect import isroutine
 from numbers import Number
 
 
-def apretty(obj, indent='    ', depth=4, width=72, seq_length=100,
+def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
             show_protected=False, show_private=False, show_static=False, show_properties=False, show_address=False,
             str_length=50, ignore=None):
     """Represents any python object in a human readable format.

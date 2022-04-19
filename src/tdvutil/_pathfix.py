@@ -1,6 +1,6 @@
 import inspect
 from pathlib import Path
-from typing import Any, Callable, List, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, List, TypeVar, cast
 
 TFunc = TypeVar("TFunc", bound=Callable[..., Any])
 
@@ -47,6 +47,8 @@ if __name__ == "__main__":
         print(f"int1: {type(int1)}")
 
 
-    # thingie(path="/tmp/path", path4="/tmp/path4", path3="/tmp/path3", path2="/tmp/path2")
-    thingie("/tmp/path", 2, 14, path3="/tmp/path3", path4="/tmp/path4",
-            path5=Path("/tmp/path5"))
+    # ignore mypy/pylance errors for the following, since the whole point is to
+    # test to make things do the right things when the inputs are weird/wrong
+    if not TYPE_CHECKING:
+        thingie("/tmp/path", 2, 14, path3="/tmp/path3", path4="/tmp/path4",
+                path5=Path("/tmp/path5"))

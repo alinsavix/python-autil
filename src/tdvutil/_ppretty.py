@@ -1,12 +1,27 @@
-import sys
+# This is the `ppretty` module, with some local adjustments for things
+# like allowing keys to be excluded by name, and slightly less irritating
+# defaults.
+#
+# You can find the original code at https://github.com/symonsoft/ppretty
+#
+# I've attempted to do some actual typing on this, though some of it is almost
+# certainly wrong, because I don't 100% understand the code.
+#
+# type: ignore
 from functools import partial
 from inspect import isroutine
 from numbers import Number
 
+# from typing import List, Optional, Dict, Tuple, Set, Union, Any, cast, Iterable
+# from typing_extensions import reveal_type
 
-def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
-            show_protected=False, show_private=False, show_static=False, show_properties=False, show_address=False,
-            str_length=50, ignore=None):
+
+def ppretty(obj, *, indent='    ', depth=4,
+            width=72, seq_length=100,
+            show_protected=False, show_private=False,
+            show_static=False, show_properties=False,
+            show_address=False, str_length=50,
+            ignore=None):
     """Represents any python object in a human readable format.
 
     :param obj: An object to represent.
@@ -17,7 +32,7 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
     :type depth: int
     :param width: Width of line in output string. It may be exceeded when representation doesn't fit. Default is 72.
     :type width: int
-    :param seq_length: Maximum sequence length. Also, used for object's members enumeration. Default is 5.
+    :param seq_length: Maximum sequence length. Also, used for object's members enumeration. Default is 100.
     :type seq_length: int
     :param show_protected: Examine protected members. Default is False.
     :type show_protected: bool
@@ -38,7 +53,6 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
 
     seq_brackets = {list: ('[', ']'), tuple: ('(', ')'), set: ('set([', '])'), dict: ('{', '}')}
     seq_types = tuple(seq_brackets.keys())
-    basestring_type = basestring if sys.version_info[0] < 3 else str
 
     ignore = set(ignore) if ignore else set()
 
@@ -52,7 +66,7 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
             return [repr(current_obj)]
 
         # Strings
-        if isinstance(current_obj, basestring_type):
+        if isinstance(current_obj, str):
             if len(current_obj) <= str_length:
                 return [repr(current_obj)]
             return [repr(current_obj[:int(str_length / 2)] + '...' + current_obj[int((1 - str_length) / 2):])]
@@ -66,7 +80,10 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
         if current_obj is None:
             return ['None']
 
+
         # Format block of lines
+
+
         def format_block(lines, open_bkt='', close_bkt=''):
             new_lines = []  # new_lines will be returned if width exceeded
             one_line = ''  # otherwise, one_line will be returned.
@@ -90,29 +107,32 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
             pass
 
         class ErrorAttr(object):
-            def __init__(self, e):
+            def __init__(self, e: Exception):
                 self.e = e
 
         def cut_seq(seq):
             if current_depth < 1:
                 return [SkipElement()]
-            if len(seq) <= seq_length:
+            seq = list(seq) if isinstance(seq, tuple) else seq
+
+            if len(seq) <= seq_length or seq_length == 0:
                 return seq
             elif seq_length > 1:
-                seq = list(seq) if isinstance(seq, tuple) else seq
                 return seq[:int(seq_length / 2)] + [SkipElement()] + seq[int((1 - seq_length) / 2):]
             return [SkipElement()]
 
         def format_seq(extra_lines):
             r = []
             items = cut_seq(obj_items)
+
             for n, i in enumerate(items, 1):
                 if type(i) is SkipElement:
                     r.append('...')
                 else:
                     if type(current_obj) is dict or seq_type_descendant and isinstance(current_obj, dict):
                         (k, v) = i
-                        if isinstance(k, basestring_type) and k in ignore:
+
+                        if isinstance(k, str) and k in ignore:
                             r.append('...')
                             if n < len(items) or extra_lines:
                                 r[-1] += ', '
@@ -130,9 +150,9 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
                             continue
                         k = [k]
                         if type(v) is ErrorAttr:
-                            e_message = '<Attribute error: ' + type(v.e).__name__
+                            e_message: str = '<Attribute error: ' + type(v.e).__name__
                             if hasattr(v.e, 'message'):
-                                e_message += ': ' + v.e.message
+                                e_message = e_message + ': ' + getattr(v.e, 'message')
                             e_message += '>'
                             v = [e_message]
                         else:
@@ -188,8 +208,9 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
                     module = current_obj.__module__ + '.'
                 else:
                     module = ''
-            except:
+            except Exception:
                 print(f"blew up on type {type(current_obj.__module__)}")
+                raise
             address = ' at ' + hex(id(current_obj)) + ' ' if show_address else ''
             brackets = (module + type(current_obj).__name__ + address + '(', ')')
 
@@ -200,17 +221,17 @@ def ppretty(obj, indent='    ', depth=4, width=72, seq_length=100,
 
 if __name__ == '__main__':
     class B(object):
-        def __init__(self, b):
+        def __init__(self, b) -> None:
             self.b = b
 
     class A(object):
         i = [-3, 4.5, ('6', B({'\x07': 8}))]
 
-        def __init__(self, a):
+        def __init__(self, a) -> None:
             self.a = a
 
     class C(object):
-        def __init__(self):
+        def __init__(self) -> None:
             self.a = {u'1': A(2), '9': [1000000000000000000000, 11, {
                 (12, 13): {14, None}}], 15: [16, 17, 18, 19, 20]}
             self.b = 'd'
@@ -219,26 +240,26 @@ if __name__ == '__main__':
 
         d = 'c'
 
-        def foo(self):
+        def foo(self) -> None:
             pass
 
         @property
-        def bar(self):
+        def bar(self) -> str:
             return 'e'
 
         class D(object):
             pass
 
 
-    print(apretty(C(), indent='    ', depth=8, width=41, seq_length=100,
+    print(ppretty(C(), indent='    ', depth=8, width=41, seq_length=100,
                   show_static=True, show_protected=True, show_properties=True, show_address=True))
-    print(apretty(C(), depth=8, width=200, seq_length=4))
+    print(ppretty(C(), depth=8, width=200, seq_length=4))
 
     class E(dict):
-        def __init__(self):
+        def __init__(self) -> None:
             dict.__init__(self, yyy='xxx')
             self.www = 'Very long text Bla-Bla-Bla'
 
-    print(apretty(E(), str_length=19))
+    print(ppretty(E(), str_length=19))
 
-    print(apretty({x: x for x in range(10)}))
+    print(ppretty({x: x for x in range(10)}))

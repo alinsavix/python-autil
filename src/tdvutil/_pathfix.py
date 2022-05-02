@@ -5,8 +5,10 @@ from typing import TYPE_CHECKING, Any, Callable, List, TypeVar, cast
 TFunc = TypeVar("TFunc", bound=Callable[..., Any])
 
 def pathfix(func: TFunc) -> TFunc:
-    # functools.wraps(func)
-
+    """
+    A transition helper; if an argument typed as pathlib.Path is passed
+    a plain string or similar, automatically convert it to a Path
+    """
     def inner(*args: Any, **kwargs: Any) -> Any:
         # spec = inspect.getfullargspec(func)
         # print(spec)

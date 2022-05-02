@@ -7,11 +7,6 @@ this, but I've yet to find one. Suggestions welcome.
 
 import inspect
 import itertools
-# import sys
-# from functools import partial
-# from inspect import isroutine
-# from numbers import Number
-# from types import FuinctionType
 from typing import Iterable, List, Set, Tuple
 
 # FIXME: totally not sure how to type annotate this list of types
@@ -20,6 +15,15 @@ from typing import Iterable, List, Set, Tuple
 # base_types = (list, tuple, set, dict, int, float, complex, str, bytes, bool, set, frozenset)
 
 def whatis(obj: object) -> Set[str]:
+    """
+    Given an object, return a set of strings describing what it is. Intended
+    to make it slightly easier to introspect things. Pretty ugly, though.
+
+    :param obj: The object to be introspected
+    :type obj: object
+    :return: A set of strings describing the provided object
+    :rtype: Set[str]
+    """
     objis: Set[str] = set()
 
     if inspect.ismodule(obj):
@@ -78,44 +82,28 @@ def is_method(obj: object) -> bool:
     return False
 
 
-def _list_members(cls: object) -> Set[str]:
+def list_members(cls: object) -> Set[str]:
     return set(x for x, _ in inspect.getmembers(cls))
 
 
-def _list_methods(cls: object) -> Set[str]:
+def list_methods(cls: object) -> Set[str]:
     return set(x for x, _ in inspect.getmembers(cls, is_method))
 
 
-def _list_parent_methods(cls: object) -> Set[str]:
+def list_parent_methods(cls: object) -> Set[str]:
     if not isinstance(cls, type):
         bases = [type(cls)]
     else:
         bases = getattr(cls, "__bases__", [])
 
     return set(itertools.chain.from_iterable(
-        _list_members(c).union(_list_parent_methods(c)) for c in bases))
+        list_members(c).union(list_parent_methods(c)) for c in bases))
 
 
 def subclass_methods(cls: object) -> Set[str]:
-    methods = _list_methods(cls)
-    parent_methods = _list_parent_methods(cls)
+    methods = list_methods(cls)
+    parent_methods = list_parent_methods(cls)
     return methods.difference(parent_methods)
-
-
-# list attributes (by listing non-methods) -- is there a better way?
-# def _list_attrs(cls):
-#     return set(x for x, y in cls.__dict__.items()
-#                if "routine" not in whatis(y))
-
-# def _list_parent_attrs(cls):
-#     return set(itertools.chain.from_iterable(
-#         _list_attrs(c).union(_list_parent_attrs(c)) for c in cls.__bases__))
-
-# def subclass_attrs(cls):
-#     attrs = _list_attrs(cls)
-
-#     parent_attrs = _list_parent_attrs(cls)
-#     return set(cls for cls in attrs if not (cls in parent_attrs))
 
 
 # list data (stuff that's not an attribute or method)
@@ -123,7 +111,7 @@ def is_not_method(obj: object) -> bool:
     return not is_method(obj)
 
 
-def _list_data(cls: object) -> Set[str]:
+def list_data(cls: object) -> Set[str]:
     if type(cls) is type:
         return set()
 
@@ -131,18 +119,18 @@ def _list_data(cls: object) -> Set[str]:
     return set(x for x, _ in inspect.getmembers(cls, is_not_method))
 
 
-def _list_parent_data(cls: object) -> Set[str]:
+def list_parent_data(cls: object) -> Set[str]:
     if not isinstance(cls, type):
         bases = [type(cls)]
     else:
         bases = getattr(cls, "__bases__", [])
     return set(itertools.chain.from_iterable(
-        _list_members(c).union(_list_parent_data(c)) for c in bases))
+        list_members(c).union(list_parent_data(c)) for c in bases))
 
 
 def subclass_data(cls: object) -> Set[str]:
-    datas = _list_data(cls)
-    parent_datas = _list_parent_data(cls)
+    datas = list_data(cls)
+    parent_datas = list_parent_data(cls)
 
     return datas.difference(parent_datas)
     # return set(x for x in datas if not (x in parent_data))
@@ -248,6 +236,14 @@ def print_class_hierarchy_r(cls: object, seen: Set[type] = set()) -> None:
 
 
 def alintrospect(cls: object) -> None:
+    """
+    Print information about an object and its ancestors, trying to identify
+    at what point in the hierarchy various methods, attributes, and data are
+    defined.
+
+    :param cls: object to be introspected
+    :type cls: object
+    """
     print_class_hierarchy_r(cls)
 
 

@@ -12,6 +12,15 @@ dist:
 	$(PYTHON_BIN) -m build -n -w
 
 
+.PHONY: docs
+docs:
+	cd docs && make html
+
+.PHONY: clean-docs
+clean-docs:
+	cd docs && make clean
+
+
 # just use normal pip (with an empty setup.cfg) for local and editable installs
 .PHONY: install
 install:
@@ -32,7 +41,7 @@ localdev:
 # 	rm -rf dist build */*.egg-info *.egg-info
 
 .PHONY: clean
-clean:
+clean: clean-docs
 	rm -rf dist build */*.egg-info *.egg-info
 
 

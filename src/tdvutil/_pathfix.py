@@ -6,9 +6,23 @@ TFunc = TypeVar("TFunc", bound=Callable[..., Any])
 
 def pathfix(func: TFunc) -> TFunc:
     """
-    A transition helper; if an argument typed as pathlib.Path is passed
-    a plain string or similar, automatically convert it to a Path
+    Decorator to help with transitioning to using :class:`pathlib.Path` in
+    functions that currently accept `str` or :class:`os.PathLike` as an
+    argument. Functions decorated with `@pathfix` will automatically have
+    any arguments typed as :class:`pathlib.Path` converted to that type if
+    they are called using a non-`Path` data type. For example:
+
+    .. code-block:: python
+
+        @pathfix
+        def do_something(file: Path) -> None:
+            if file.exists():
+                print(f"{file} exists")
+
+        # This now works
+        do_something("/tmp/foo.txt")
     """
+
     def inner(*args: Any, **kwargs: Any) -> Any:
         # spec = inspect.getfullargspec(func)
         # print(spec)

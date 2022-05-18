@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=61.0",
+    "setuptools_scm[toml]>=5",
     "wheel",
 
     # this will validate our project classifiers
@@ -10,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tdvutil"
-version = "0.0.1"
+dynamic = [ "version" ]
 description = "A few simple helper classes used by TDV Alinsa"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
@@ -43,6 +44,14 @@ dependencies = []
 # [project.scripts]
 # sample = "sample:main"
 
+
+[tool.setuptools_scm]
+# For smarter version schemes and other configuration options,
+# check out https://github.com/pypa/setuptools_scm
+version_scheme = "no-guess-dev"
+write_to = "src/_tdvutil/_version.py"
+
+
 [tool.setuptools]
 # our actual source code
 package-dir = { "" = "src" }
@@ -51,7 +60,8 @@ package-dir = { "" = "src" }
 [tool.setuptools.package-data]
 # data files included that need to be installed
 # "sample" = [ "*.dat" ]
-"autil" = [ "py.typed" ]
+"tdvutil" = [ "py.typed" ]
+"_tdvutil" = [ "py.typed" ]
 
 [tool.mypy]
 python_version = 3.9

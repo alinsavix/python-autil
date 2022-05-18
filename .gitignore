@@ -108,3 +108,5 @@ tests/report.html
 .vscode/
 .tox
 *.prof
+
+src/_tdvutil/_version.py

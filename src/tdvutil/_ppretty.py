@@ -16,38 +16,38 @@ from numbers import Number
 # from typing_extensions import reveal_type
 
 
-def ppretty(obj, *, indent='    ', depth=4,
-            width=72, seq_length=100,
-            show_protected=False, show_private=False,
-            show_static=False, show_properties=False,
-            show_address=False, str_length=50,
+def ppretty(obj, *, indent='    ', depth=4, width=72, seq_length=100,
+            show_protected=False, show_private=False, show_static=False,
+            show_properties=False, show_address=False, str_length=50,
             ignore=None):
-    """Represents any python object in a human readable format.
+    """Break down a python object into a human readable format.
 
     :param obj: An object to represent.
     :type obj: object
-    :param indent: Fill string for indents. Default is '    '.
+    :param indent: Fill string for indents.
     :type indent: str
-    :param depth: Depth of introspecion. Default is 4.
+    :param depth: Maximum depth of introspection
     :type depth: int
-    :param width: Width of line in output string. It may be exceeded when representation doesn't fit. Default is 72.
+    :param width: Width of a line in the output string. May be exceeded when a representation doesn't fit.
     :type width: int
-    :param seq_length: Maximum sequence length. Also, used for object's members enumeration. Default is 100.
+    :param seq_length: Maximum sequence length to examine for lists, sets, dicts, and class members.
     :type seq_length: int
-    :param show_protected: Examine protected members. Default is False.
+    :param show_protected: Introspect protected members.
     :type show_protected: bool
-    :param show_private: Examine private members. To take effect show_protected must be set to True. Default is False.
+    :param show_private: Introspect private members. To take effect show_protected must also be set to True. (FIXME: do this automatically)
     :type show_private: bool
-    :param show_static: Examine static members. Default is False.
+    :param show_static: Introspect static members.
     :type show_static: bool
-    :param show_properties: Examine properties members. Default is False.
+    :param show_properties: Introspect property members.
     :type show_properties: bool
-    :param show_address: Show address. Default is False.
+    :param show_address: Show memory address.
     :type show_address: bool
-    :param str_length: Maximum string length. Default is 50.
+    :param str_length: Maximum string length.
     :type str_length: int
+    :param ignore: Names of key names to ignore. Just checks the base key name, with no facility for specifying a more complete path
+    :type ignore: List[str] | Set[str]
 
-    :return: The final representation of the object.
+    :return: The final textual representation of the object.
     :rtype: str
     """
 

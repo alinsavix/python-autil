@@ -4,12 +4,21 @@ PIP_BIN ?= pip3
 # to actually create the distribution package, use the setuptools.build_meta
 # pyproject.toml-capable backend
 .PHONY: dist
-dist:
+dist: clean-dist
 	@if ! $(PIP_BIN) show 'build' >/dev/null 2>&1; then \
 		echo "ERROR: python 'build' package is required (hint: $(PIP_BIN) install build)";  \
 		exit 1; \
 	fi
 	$(PYTHON_BIN) -m build -n
+
+.PHONY: clean-dist
+clean-dist:
+	rm -rf dist build
+
+
+.PHONY: upload
+upload: dist
+	twine upload --skip-existing --verbose dist/*
 
 
 .PHONY: docs
@@ -41,8 +50,8 @@ localdev:
 # 	rm -rf dist build */*.egg-info *.egg-info
 
 .PHONY: clean
-clean: clean-docs
-	rm -rf dist build */*.egg-info *.egg-info
+clean: clean-docs clean-dist
+	rm -rf */*.egg-info *.egg-info
 
 
 # helpful for debugging

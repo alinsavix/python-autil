@@ -9,7 +9,7 @@ dist:
 		echo "ERROR: python 'build' package is required (hint: $(PIP_BIN) install build)";  \
 		exit 1; \
 	fi
-	$(PYTHON_BIN) -m build -n -w
+	$(PYTHON_BIN) -m build -n
 
 
 .PHONY: docs

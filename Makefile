@@ -16,9 +16,13 @@ clean-dist:
 	rm -rf dist build
 
 
-.PHONY: upload
-upload: dist
-	twine upload --skip-existing --verbose dist/*
+.PHONY: upload-prod
+upload-prod: dist
+	twine upload --repository tdvutil --skip-existing dist/*
+
+.PHONY: upload-test
+upload-test: dist
+	twine upload --repository tdvutil_test --skip-existing dist/*
 
 
 .PHONY: docs

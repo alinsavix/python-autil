@@ -14,7 +14,7 @@ name = "tdvutil"
 dynamic = [ "version" ]
 description = "A few simple helper classes used by TDV Alinsa"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = { file = "LICENSE.txt" }
 readme = "README.md"
 # keywords = [ "whatever", "whatever_else" ]
 authors = [ { name = "TDV Alinsa", email = "alinsa-github@lupine.org" } ]

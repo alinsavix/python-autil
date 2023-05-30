@@ -26,12 +26,21 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
-dependencies = []
+dependencies = [  ]
 
 # for e.g. "pip install mything[dev]"
 # [project.optional-dependencies]
 # dev = ["check-manifest"]
 
+[project.optional-dependencies]
+tests = [
+    'pytest>=7.0',
+    'pytest-cov',
+    # 'pytest-html',
+    # 'pytest-order',
+    # 'pytest-benchmark[histogram]>=3.2.1',
+    # 'responses',
+]
 
 [project.urls]
 "Homepage" = "https://github.com/alinsavix/python-tdvutil"
@@ -85,3 +94,43 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_return_any = true
+
+
+[tool.isort]
+sections = [ "FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "LOCALFOLDER" ]
+
+
+[tool.pytest.ini_options]
+log_cli = true
+
+addopts = [
+    "--tb=short",
+    "--strict-markers",
+    # "--html=@rootdir@/tests/report.html",
+    # "--css=@rootdir@/tests/report.css",
+    # "--self-contained-html",
+    # "--cov=wowdump",
+    # "--cov-report=html:@rootdir@/tests/htmlcov",
+    "--import-mode=importlib",
+
+]
+
+pythonpath = [ "src" ]
+
+console_output_style = "count"
+log_auto_indent = true
+norecursedirs = [ "*" ]
+python_files = [ "test_*.py", "check_*.py", "example_*.py" ]
+testpaths = [ "tests" ]
+
+required_plugins = [
+    # "pytest-html >=3.1",
+    "pytest-cov >=2.12",
+    # "pytest-order >=1.0",
+]
+
+filterwarnings = [
+    # hopefully the pytest folks will give us a better way to do this at
+    # some point so we don't have to use `pytest_cmdline_preparse` at all
+    'ignore:The pytest_cmdline_preparse hook is deprecated:DeprecationWarning',
+]

@@ -1,17 +1,18 @@
-import time
-
-
 # Convert seconds to HH:MM:SS.SSS format. Sure, this could use strftime
 # or datetime.timedelta, but both of those have their own issues when
 # you want a consistent format involving milliseconds.
-def sec_to_hms(secs: float) -> str:
+def sec_to_hms(secs: float, use_ms: bool = True, use_hours: bool = True) -> str:
     """
     Simple conversion from a time in seconds, to hh:mm:ss.sss format
 
     :param secs: A length of time to convert, in seconds
     :type secs: float
+    :param use_ms: include milliseconds in the output
+    :type use_ms: bool
+    :param use_hours: include hours digits in the output, even if zero
+    :type use_hours: bool
 
-    :return: A string in the format of hh:mm:ss.sss
+    :return: A string in the format of [hh]:mm:ss[.sss]
     :rtype: str
     """
     hours = int(secs // (60 * 60))
@@ -23,7 +24,10 @@ def sec_to_hms(secs: float) -> str:
     ms = int((secs % 1) * 1000)
     secs = int(secs)
 
-    return f"{hours:02d}:{minutes:02d}:{secs:02d}.{ms:03d}"
+    ms_str = f".{ms:03d}" if use_ms else ""
+    hour_str = f"{hours:02d}:" if (use_hours or hours > 0) else ""
+
+    return f"{hour_str}{minutes:02d}:{secs:02d}{ms_str}"
 
 
 # Convert seconds to a compressed string, e.g. 1h15m6s
@@ -81,17 +85,5 @@ def hms_to_sec(hms: str) -> float:
         s = timesplit[0]
     else:
         raise ValueError(f"too many fields ({len(timesplit)}) in hh:mm:ss string 'hms'")
-        sys.exit(1)
 
     return (int(h) * 60 * 60) + (int(m) * 60) + float(s)
-
-
-if __name__ == '__main__':
-    sec = 18231
-    hms = sec_to_hms(sec)
-    hms_short = sec_to_shortstr(sec)
-    sec = hms_to_sec(hms)
-
-    print(f"{sec}s -> {hms}")
-    print(f"{sec}s -> {hms_short}")
-    print(f"{hms} -> {sec}s")

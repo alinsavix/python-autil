@@ -45,6 +45,9 @@ localdev:
 	$(PIP_BIN) install --editable .
 
 
+.PHONY: test
+test:
+	@pytest
 # .PHONY: clean
 # clean:
 # 	rm -rf ./$(OUTDIR)/* ./$(WOWDUMP_OUTDIR)/* ./$(DEPS_DIR)/*.*P ./$(DEPS_DIR)/*.d
